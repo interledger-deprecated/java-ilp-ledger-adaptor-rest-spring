@@ -1,7 +1,6 @@
 package org.interledger.ilp.ledger.adaptor.rest.service;
 
 import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
-import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonError;
 import org.slf4j.Logger;
@@ -25,10 +24,6 @@ public class RestServiceBase {
     return this.restTemplate;
   }
 
-  public String getServiceUrl(ServiceUrls name) {
-    return adaptor.getServiceUrl(name);
-  }
-
   protected RestServiceException parseRestException(HttpStatusCodeException knownException) {
     JsonError error;
     try {
@@ -42,7 +37,5 @@ public class RestServiceBase {
     }
     return new RestServiceException(error, knownException);
   }
-
-
 
 }

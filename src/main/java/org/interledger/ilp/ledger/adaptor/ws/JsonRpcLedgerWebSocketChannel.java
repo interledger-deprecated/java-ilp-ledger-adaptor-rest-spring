@@ -4,6 +4,7 @@ import java.net.URI;
 
 import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
 import org.interledger.ilp.core.ledger.events.LedgerEventSource;
+import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerMessage;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcConnectNotification;
@@ -24,12 +25,13 @@ public class JsonRpcLedgerWebSocketChannel extends JsonRpcWebSocketChannel
     implements LedgerEventSource {
 
   private URI ledgerId;
+  private RestLedgerAdaptor adaptor;
   private LedgerEventHandler eventHandler;
   private boolean isConnected = false; // Not thread safe?
 
-  public JsonRpcLedgerWebSocketChannel(URI ledgerId, URI uri, String authToken,
-      LedgerEventHandler eventHandler) {
+  public JsonRpcLedgerWebSocketChannel(RestLedgerAdaptor adaptor, URI ledgerId, URI uri, String authToken, LedgerEventHandler eventHandler) {
     super(URI.create(uri.toString() + "?token=" + authToken), true, 5);
+    this.adaptor = adaptor;
     this.ledgerId = ledgerId;
     this.eventHandler = eventHandler;
   }
@@ -94,12 +96,12 @@ public class JsonRpcLedgerWebSocketChannel extends JsonRpcWebSocketChannel
       JsonRpcRequestTransferNotificationParams transferParams) {
     JsonLedgerTransfer transfer = transferParams.getTransfer();
     eventHandler
-        .handleLedgerEvent(new ClientLedgerTransferEvent(this, transfer.toLedgerTransfer()));
+        .handleLedgerEvent(new ClientLedgerTransferEvent(this, transfer.toLedgerTransfer(adaptor)));
   }
 
   private void onLedgerMessage(JsonRpcRequestMessageNotificationParams messageParams) {
     JsonLedgerMessage msg = ((JsonRpcRequestMessageNotificationParams) messageParams).getMessage();
-    eventHandler.handleLedgerEvent(new ClientLedgerMessageEvent(this, msg.toLedgerMessage()));
+    eventHandler.handleLedgerEvent(new ClientLedgerMessageEvent(this, msg.toLedgerMessage(adaptor)));
   }
 
   private void onUnknownMessage(JsonRpcMessage message) {

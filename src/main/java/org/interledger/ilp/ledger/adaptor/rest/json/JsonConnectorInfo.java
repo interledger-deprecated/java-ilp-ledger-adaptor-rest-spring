@@ -1,37 +1,25 @@
 package org.interledger.ilp.ledger.adaptor.rest.json;
 
-import org.interledger.ilp.core.ledger.model.ConnectorInfo;
+import java.net.URI;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class JsonConnectorInfo implements ConnectorInfo {
+public class JsonConnectorInfo {
 
-  private String id;
+  private URI id;
   private String name;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.ConnectorInfo#getId()
-   */
-  @Override
   @JsonProperty(value = "id")
-  public String getId() {
+  public URI getId() {
     return id;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.ConnectorInfo#getName()
-   */
-  @Override
   @JsonProperty(value = "name")
   public String getName() {
     return name;
   }
 
-  public void setId(String id) {
+  public void setId(URI id) {
     this.id = id;
   }
 

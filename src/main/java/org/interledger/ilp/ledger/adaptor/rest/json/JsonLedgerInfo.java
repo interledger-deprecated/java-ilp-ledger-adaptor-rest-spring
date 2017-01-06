@@ -2,23 +2,31 @@ package org.interledger.ilp.ledger.adaptor.rest.json;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
-import org.interledger.ilp.core.ledger.model.ConnectorInfo;
+import javax.money.CurrencyUnit;
+import javax.money.Monetary;
+import javax.money.MonetaryException;
+import javax.money.UnknownCurrencyException;
+import javax.money.format.MonetaryAmountFormat;
+import javax.money.format.MonetaryFormats;
+
+import org.interledger.ilp.core.InterledgerAddress;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
+import org.interledger.ilp.ledger.client.exceptions.DataModelTranslationException;
+import org.interledger.ilp.ledger.client.model.ClientLedgerInfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class JsonLedgerInfo implements LedgerInfo {
+public class JsonLedgerInfo {
 
   private String conditionSignPublicKey;
-  private List<ConnectorInfo> connectors;
+  private List<JsonConnectorInfo> connectors;
   private String currencyCode;
   private String currencySymbol;
   private URI id;
@@ -26,90 +34,54 @@ public class JsonLedgerInfo implements LedgerInfo {
   private String notificationSignPublicKey;
   private int precision;
   private int scale;
-  private Map<String, URI> urls;
+  private Map<String, String> urls;
 
-  @Override
   @JsonProperty(value = "condition_sign_public_key")
   public String getConditionSignPublicKey() {
     return this.conditionSignPublicKey;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerInfo#getConnectors()
-   */
-  @Override
   @JsonProperty(value = "connectors")
-  @JsonDeserialize(contentAs = JsonConnectorInfo.class)
-  @JsonSerialize(contentAs = JsonConnectorInfo.class)
-  public List<ConnectorInfo> getConnectors() {
+  public List<JsonConnectorInfo> getConnectors() {
     return connectors;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerInfo#getCurrencyCode()
-   */
-  @Override
   @JsonProperty(value = "currency_code")
   public String getCurrencyCode() {
     return currencyCode;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerInfo#getCurrencySymbol()
-   */
-  @Override
   @JsonProperty(value = "currency_symbol")
   public String getCurrencySymbol() {
     return currencySymbol;
   }
 
-  @Override
-  public String getId() {
-    return id == null ? null : id.toString();
+  public URI getId() {
+    return id;
   }
 
-  @Override
-  @JsonProperty(value = "ilp_prefix") // FIXME: super confusing, why isnt it IlpPrefix?
-  public String getLedgerPrefix() {
+  @JsonProperty(value = "ilp_prefix")
+  public String getIlpPrefix() {
     return this.ledgerPrefix;
   }
 
-  @Override
   @JsonProperty(value = "notification_sign_public_key")
   public String getNotificationSignPublicKey() {
     return this.notificationSignPublicKey;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerInfo#getPrecision()
-   */
-  @Override
   @JsonProperty(value = "precision")
   public int getPrecision() {
     return precision;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.interledger.ilp.ledger.adaptor.rest.json.LedgerInfo#getScale()
-   */
-  @Override
   @JsonProperty(value = "scale")
   public int getScale() {
     return scale;
   }
 
   @JsonProperty(value = "urls")
-  public Map<String, URI> getUrls() {
+  public Map<String, String> getUrls() {
     return urls;
   }
 
@@ -117,7 +89,7 @@ public class JsonLedgerInfo implements LedgerInfo {
     this.conditionSignPublicKey = key;
   }
 
-  public void setConnectors(List<ConnectorInfo> connectors) {
+  public void setConnectors(List<JsonConnectorInfo> connectors) {
     this.connectors = connectors;
   }
 
@@ -133,7 +105,7 @@ public class JsonLedgerInfo implements LedgerInfo {
     this.id = id;
   }
 
-  public void setLedgerPrefix(String ledgerPrefix) {
+  public void setIlpPrefix(String ledgerPrefix) {
     this.ledgerPrefix = ledgerPrefix;
   }
 
@@ -149,8 +121,37 @@ public class JsonLedgerInfo implements LedgerInfo {
     this.scale = scale;
   }
 
-  public void setUrls(Map<String, URI> urls) {
+  public void setUrls(Map<String, String> urls) {
     this.urls = urls;
+  }
+
+  public LedgerInfo toLedgerInfo() {
+    
+    ClientLedgerInfo ledgerInfo = new ClientLedgerInfo();
+    ledgerInfo.setId(getId().toString());
+    ledgerInfo.setPrefix(new InterledgerAddress(getIlpPrefix()));    
+    ledgerInfo.setPrecision(getPrecision());
+    ledgerInfo.setScale(getScale());
+    
+    try {
+      CurrencyUnit currency = Monetary.getCurrency(getCurrencyCode());
+      ledgerInfo.setCurrencyUnit(currency);
+    } catch (UnknownCurrencyException e) {
+      throw new DataModelTranslationException("Unrecognized currency code: " + getCurrencyCode(), this, e);
+    }
+    
+    try {
+      //TODO Set the style using the provided symbol 
+      MonetaryAmountFormat format = MonetaryFormats.getAmountFormat(Locale.getDefault());
+      ledgerInfo.setMonetaryAmountFormat(format);
+    } catch (MonetaryException e) {
+      throw new DataModelTranslationException("Unable to load currency formatter.", this, e);
+    }
+    
+    //TODO Decode public key
+    ledgerInfo.setConditionSignPublicKey(null);
+    
+    return ledgerInfo;
   }
 
   @Override

@@ -3,19 +3,20 @@ package org.interledger.ilp.ledger.adaptor.rest;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
+import org.interledger.ilp.core.InterledgerAddress;
 import org.interledger.ilp.core.ledger.LedgerAdaptor;
 import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
-import org.interledger.ilp.core.ledger.model.Account;
+import org.interledger.ilp.core.ledger.model.AccountInfo;
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.core.ledger.model.LedgerMessage;
 import org.interledger.ilp.core.ledger.model.LedgerTransfer;
 import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
-import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerInfo;
 import org.interledger.ilp.ledger.adaptor.rest.service.RestLedgerAccountService;
 import org.interledger.ilp.ledger.adaptor.rest.service.RestLedgerAuthTokenService;
 import org.interledger.ilp.ledger.adaptor.rest.service.RestLedgerMessageService;
@@ -28,89 +29,54 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriTemplate;
 
 @Service
 public class RestLedgerAdaptor implements LedgerAdaptor {
 
   private static final Logger log = LoggerFactory.getLogger(RestLedgerAdaptor.class);
 
-  private static final Pattern urlTemplateRegex = Pattern.compile("/\\:([A-Za-z0-9-]+)");
-
   private UsernamePasswordAuthenticationToken accountAuthToken = null;
-
   private RestLedgerAccountService accountService;
   private RestLedgerAuthTokenService authTokenService;
-  private LedgerEventHandler eventhandler;
-  private JsonLedgerInfo ledgerInfo = null;
-
+  private RestLedgerTransferService transferService;
   private RestLedgerMessageService messageService;
 
   private RestLedgerMetaService metaService;
 
-  private RestTemplateBuilder restTemplateBuilder;
-
-  private RestLedgerTransferService transferService;
-  private Map<ServiceUrls, String> urls;
-
   private JsonRpcLedgerWebSocketChannel websocketChannel;
 
-  public RestLedgerAdaptor(RestTemplateBuilder restTemplateBuilder, String ledgerBaseUrl) {
+  private RestTemplateBuilder restTemplateBuilder;
 
+  private LedgerEventHandler eventhandler;
+
+  private Set<InterledgerAddress> connectors;
+
+  public RestLedgerAdaptor(RestTemplateBuilder restTemplateBuilder, URI ledgerBaseUrl) {
+    
     this.restTemplateBuilder = restTemplateBuilder;
-
-    urls = new HashMap<ServiceUrls, String>();
-    urls.put(ServiceUrls.LEDGER, ledgerBaseUrl);
-
+    this.metaService = new RestLedgerMetaService(this, restTemplateBuilder.build(), ledgerBaseUrl);
   }
 
+  /**
+   * The REST adaptor performs the following steps when it connects
+   * <ol>
+   * <li>Execute a GET against the base URL to get the ledger meta-data</li>
+   * <li>Asynchronously opn a web socket to the server.
+   * <ol>
+   * <li>Get an auth token.</li>
+   * <li>Attempt to establish a connection.</li>
+   * </ol>
+   * <li>
+   * </ol>
+   */
   @Override
   public void connect() {
 
-    // Get ledger info
-    if (metaService == null) {
-      metaService = new RestLedgerMetaService(this, restTemplateBuilder.build());
-    }
-    ledgerInfo = metaService.getLedgerInfo();
-
-    // FIXME Have to fix all the URL templates because they use a non-standard format
-    Map<String, URI> metaUrls = ledgerInfo.getUrls();
-    for (String urlName : metaUrls.keySet()) {
-      urls.put(ServiceUrls.fromName(urlName), fixUriTemplates(metaUrls.get(urlName).toString()));
-    }
-
-    if (ledgerInfo.getId() == null) {
-      ledgerInfo.setId(URI.create(getServiceUrl(ServiceUrls.LEDGER)));
-    }
+    metaService.getLedgerInfo();
 
     // Connect to socket for events
-    createWebsocket();
+    createWebsocket(metaService.getWebsocketUri());
     websocketChannel.open();
-
-  }
-
-  private void createWebsocket() throws RestServiceException {
-
-    throwIfNotConnected();
-    if (this.websocketChannel == null || !this.websocketChannel.isOpen()) {
-
-      if (this.authTokenService == null) {
-        this.authTokenService = new RestLedgerAuthTokenService(this,
-            getRestTemplateBuilderWithAuthIfAvailable().build());
-      }
-
-      String token = this.authTokenService.getAuthToken();
-
-      log.debug("Creating Notification Listener Service");
-      URI wsUri = URI.create(getServiceUrl(ServiceUrls.WEBSOCKET));
-
-      if (wsUri == null || wsUri.getScheme() == null || !wsUri.getScheme().startsWith("ws")) {
-        throw new RuntimeException("Invalid websocket URL: " + wsUri);
-      }
-
-      this.websocketChannel = new JsonRpcLedgerWebSocketChannel(URI.create(getLedgerInfo().getId()),
-          wsUri, token, eventhandler);
-    }
 
   }
 
@@ -119,6 +85,7 @@ public class RestLedgerAdaptor implements LedgerAdaptor {
 
     throwIfNotConnected();
 
+    // Disconnect websocket
     try {
       this.websocketChannel.close();
     } catch (IOException e) {
@@ -126,46 +93,56 @@ public class RestLedgerAdaptor implements LedgerAdaptor {
     }
     this.websocketChannel = null;
 
-    ledgerInfo = null;
-    String ledgerUri = getServiceUrl(ServiceUrls.LEDGER);
-    urls.clear();
-    urls.put(ServiceUrls.LEDGER, ledgerUri);
-
-  }
-
-  private String fixUriTemplates(String input) {
-    return urlTemplateRegex.matcher(input.toString()).replaceAll("/\\{$1\\}");
+    // Reset meta-data service
+    metaService = new RestLedgerMetaService(this, restTemplateBuilder.build(), metaService.getBaseUri());
+ 
+    //Clear connector list
+    connectors = null;
   }
 
   @Override
-  public Account getAccount(String accountName) {
-    return getAccountService().getAccount(accountName);
-  }
-
-  // FIXME May be unsafe
-  public URI getAccountIdentifier(String account) {
-
-    URI id = URI.create(account);
-
-    if (!id.isAbsolute()) {
-      return new UriTemplate(getServiceUrl(ServiceUrls.ACCOUNT)).expand(account);
-    }
-
-    return id;
-  }
-
-  private RestLedgerAccountService getAccountService() {
-
+  public Set<InterledgerAddress> getConnectors() {
+    
     throwIfNotConnected();
 
-    if (this.accountService == null) {
-      log.debug("Creating Account Service");
-      this.accountService = new RestLedgerAccountService(this,
-          getRestTemplateBuilderWithAuthIfAvailable().build(), this.websocketChannel);
+    if(connectors == null) {
+      Set<URI> connectorIds = metaService.getConnectorIds();
+      connectors = new HashSet<InterledgerAddress>(connectorIds.size());
+      for (URI uri : connectorIds) {
+        connectors.add(getAccountAddress(uri));
+      }
     }
+    
+    return Collections.unmodifiableSet(connectors);
+  }
+  
+  public InterledgerAddress getAccountAddress(URI accountId) {
+    String account = metaService.getAccountIdUriBuilder().extractToken(accountId);
+    return InterledgerAddress.fromPrefixAndPath(getLedgerInfo().getAddressPrefix(), account);
+  }
+  
+  public URI getAccountIdentifier(InterledgerAddress account) {
+    
+    //Translate an ILP Address to an REST API account identifier
+    String accountSuffix = account.trimPrefix(this.getLedgerInfo().getAddressPrefix()).toString();
+    return metaService.getAccountIdUriBuilder().getUri(accountSuffix);
+    
+  }  
+  
+  public URI getTransferIdentifier(UUID transferId) {
+    return metaService.getTransferIdUriBuilder().getUri(transferId.toString());
+  }
+  
+  public UUID getTransferUuid(URI transferId) {
+    String uuidString = metaService.getTransferIdUriBuilder().extractToken(transferId);
+    return UUID.fromString(uuidString);
+  }
 
-    return this.accountService;
+  @Override
+  public AccountInfo getAccountInfo(InterledgerAddress account) {
 
+    URI accountId = getAccountIdentifier(account);
+    return getAccountService().getAccountInfo(accountId);
   }
 
   @Override
@@ -173,51 +150,11 @@ public class RestLedgerAdaptor implements LedgerAdaptor {
 
     throwIfNotConnected();
 
-    return ledgerInfo;
-  }
-
-  @Override
-  public String getNextTransferId() {
-    return getTransferService().getNextTransferId();
-  }
-
-  private RestTemplateBuilder getRestTemplateBuilderWithAuthIfAvailable() {
-
-    if (accountAuthToken != null
-        && (accountAuthToken.getPrincipal() != null && accountAuthToken.getCredentials() != null)) {
-
-      return restTemplateBuilder.basicAuthorization(accountAuthToken.getPrincipal().toString(),
-          accountAuthToken.getCredentials().toString());
-
-    }
-
-    return restTemplateBuilder;
-
-  }
-
-  public String getServiceUrl(ServiceUrls name) {
-    if (urls.containsKey(name)) {
-      return urls.get(name);
-    }
-    throw new RuntimeException("No URL on record for name: " + name.getName());
-  }
-
-  private RestLedgerTransferService getTransferService() {
-
-    throwIfNotConnected();
-
-    if (this.transferService == null) {
-      log.debug("Creating Transfer Service");
-      this.transferService =
-          new RestLedgerTransferService(this, getRestTemplateBuilderWithAuthIfAvailable().build());
-    }
-
-    return this.transferService;
-
+    return metaService.getLedgerInfo();
   }
 
   public boolean isConnected() {
-    return (this.ledgerInfo != null);
+    return (this.websocketChannel != null && this.websocketChannel.isOpen());
   }
 
   @Override
@@ -231,8 +168,10 @@ public class RestLedgerAdaptor implements LedgerAdaptor {
     throwIfNotConnected();
 
     if (messageService == null) {
-      messageService =
-          new RestLedgerMessageService(this, getRestTemplateBuilderWithAuthIfAvailable().build());
+      messageService = new RestLedgerMessageService(
+          this, 
+          getRestTemplateBuilderWithAuthIfAvailable().build(), 
+          metaService.getMessageUri());
     }
 
     messageService.sendMessage(msg);
@@ -255,8 +194,81 @@ public class RestLedgerAdaptor implements LedgerAdaptor {
   }
 
   @Override
-  public void subscribeToAccountNotifications(String accountName) {
-    getAccountService().subscribeToAccountNotifications(accountName);
+  public void subscribeToAccountNotifications(InterledgerAddress account) {
+    URI accountId = getAccountIdentifier(account);
+    getAccountService().subscribeToAccountNotifications(accountId);
+  }
+
+  private void createWebsocket(URI wsUri) throws RestServiceException {
+
+    if (this.websocketChannel == null || !this.websocketChannel.isOpen()) {
+
+      if (this.authTokenService == null) {
+        this.authTokenService = new RestLedgerAuthTokenService(
+            this,
+            getRestTemplateBuilderWithAuthIfAvailable().build(),
+            metaService.getAuthTokenUri());
+      }
+
+      String token = this.authTokenService.getAuthToken();
+
+      log.debug("Creating Notification Listener Service");
+
+      if (wsUri == null || wsUri.getScheme() == null || !wsUri.getScheme().startsWith("ws")) {
+        throw new RuntimeException("Invalid websocket URL: " + wsUri);
+      }
+
+      this.websocketChannel = new JsonRpcLedgerWebSocketChannel(this, this.metaService.getBaseUri(), wsUri, token, eventhandler);
+    }
+
+  }
+
+  private RestLedgerAccountService getAccountService() {
+
+    throwIfNotConnected();
+
+    if (this.accountService == null) {
+      log.debug("Creating Account Service");
+      this.accountService = new RestLedgerAccountService(this,
+          getRestTemplateBuilderWithAuthIfAvailable().build(), this.websocketChannel);
+    }
+
+    return this.accountService;
+
+  }
+
+  private RestTemplateBuilder getRestTemplateBuilderWithAuthIfAvailable() {
+
+    if (accountAuthToken != null
+        && (accountAuthToken.getPrincipal() != null && accountAuthToken.getCredentials() != null)) {
+
+      return restTemplateBuilder.basicAuthorization(accountAuthToken.getPrincipal().toString(),
+          accountAuthToken.getCredentials().toString());
+
+    }
+
+    return restTemplateBuilder;
+
+  }
+
+  private RestLedgerTransferService getTransferService() {
+
+    throwIfNotConnected();
+
+    if (this.transferService == null) {
+      log.debug("Creating Transfer Service");
+      this.transferService =
+          new RestLedgerTransferService(
+              this, 
+              getRestTemplateBuilderWithAuthIfAvailable().build(),
+              metaService.getTransferIdUriBuilder(),
+              metaService.getTransferFulfillmentUriBuilder(),
+              metaService.getRejectTransferUriBuilder()
+              );
+    }
+
+    return this.transferService;
+
   }
 
   private void throwIfNotConnected() {

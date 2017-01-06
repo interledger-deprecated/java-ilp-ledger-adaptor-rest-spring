@@ -1,5 +1,7 @@
 package org.interledger.ilp.ledger.adaptor.rest;
 
+import java.net.URI;
+
 import org.interledger.ilp.core.ledger.model.LedgerInfo;
 import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
@@ -9,9 +11,9 @@ public class MockRestClient extends RestLedgerAdaptor {
 
   private String ledgerBaseUrl;
 
-  public MockRestClient(RestTemplateBuilder restTemplateBuilder, String ledgerBaseUrl) {
+  public MockRestClient(RestTemplateBuilder restTemplateBuilder, URI ledgerBaseUrl) {
     super(restTemplateBuilder, ledgerBaseUrl);
-    this.ledgerBaseUrl = ledgerBaseUrl;
+    this.ledgerBaseUrl = ledgerBaseUrl.toString();
   }
 
   @Override
@@ -20,7 +22,6 @@ public class MockRestClient extends RestLedgerAdaptor {
     return null;
   }
 
-  @Override
   public String getServiceUrl(ServiceUrls name) {
 
     switch (name) {

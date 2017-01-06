@@ -3,12 +3,12 @@ package org.interledger.ilp.ledger.adaptor.rest.service;
 import java.net.URI;
 import java.util.UUID;
 
+import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.ledger.model.LedgerTransfer;
 import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
-import org.interledger.ilp.core.ledger.service.LedgerTransferService;
 import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
-import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
+import org.interledger.ilp.ledger.adaptor.rest.service.RestLedgerMetaService.UriBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -19,31 +19,28 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriTemplate;
 
-public class RestLedgerTransferService extends RestServiceBase implements LedgerTransferService {
+public class RestLedgerTransferService extends RestServiceBase {
+  
+  private UriBuilder transferIdUriBuilder;
+  private UriBuilder transferFulfillmentUriBuilder;
+  private UriBuilder rejectTransferUriBuilder;
 
-  public RestLedgerTransferService(RestLedgerAdaptor adaptor, RestTemplate restTemplate) {
+  public RestLedgerTransferService(RestLedgerAdaptor adaptor, RestTemplate restTemplate, 
+      UriBuilder transferIdUriBuilder, UriBuilder transferFulfillmentUriBuilder, UriBuilder rejectTransferUriBuilder) {
     super(adaptor, restTemplate);
+    
+    this.transferIdUriBuilder = transferIdUriBuilder;
+    this.transferFulfillmentUriBuilder = transferFulfillmentUriBuilder;
+    this.rejectTransferUriBuilder = rejectTransferUriBuilder;
   }
 
   private static final Logger log = LoggerFactory.getLogger(RestLedgerTransferService.class);
 
-  @Override
   public void sendTransfer(LedgerTransfer transfer) {
     try {
 
       JsonLedgerTransfer jsonTransfer = JsonLedgerTransfer.fromLedgerTransfer(transfer, adaptor);
-
-      if (!jsonTransfer.getLedger().toString().equals(getServiceUrl(ServiceUrls.LEDGER))) {
-        throw new IllegalArgumentException(
-            "Can't make transfers on other ledgers. Illegal ledger identifier: "
-                + jsonTransfer.getLedger());
-      }
-
-      if (!jsonTransfer.getId().toString().startsWith(getServiceUrl(ServiceUrls.LEDGER))) {
-        throw new IllegalArgumentException("Illegal transfer identifier: " + transfer.getId());
-      }
 
       log.debug("PUT Transfer - id : {}", jsonTransfer.getId());
 
@@ -67,7 +64,6 @@ public class RestLedgerTransferService extends RestServiceBase implements Ledger
     }
   }
 
-  @Override
   public void rejectTransfer(LedgerTransfer transfer, TransferRejectedReason reason) {
 
     log.debug("Rejecting Transfer - id : {}", transfer.getId());
@@ -77,9 +73,11 @@ public class RestLedgerTransferService extends RestServiceBase implements Ledger
       headers.setContentType(MediaType.TEXT_PLAIN);
 
       HttpEntity<Object> rejectionRequest = new HttpEntity<>(reason.toString(), headers);
-
+      
+      URI rejectTransferUri = rejectTransferUriBuilder.getUri(transfer.getId().toString());
+      
       restTemplate.exchange(
-          URI.create(getServiceUrl(ServiceUrls.TRANSFER).replace("{id}", transfer.getId())),
+          rejectTransferUri,
           HttpMethod.PUT, rejectionRequest, String.class);
 
     } catch (HttpStatusCodeException e) {
@@ -92,11 +90,14 @@ public class RestLedgerTransferService extends RestServiceBase implements Ledger
       }
     }
   }
+  
+  public void fulfillTransfer(String transferId, Fulfillment fulfillment) {
+    //TODO Implement fulfill transfer
 
-  @Override
+  }
+
   public String getNextTransferId() {
-    return new UriTemplate(getServiceUrl(ServiceUrls.TRANSFER)).expand(UUID.randomUUID())
-        .toString();
+    return transferIdUriBuilder.getUri(UUID.randomUUID().toString()).toString();
   }
 
 }
