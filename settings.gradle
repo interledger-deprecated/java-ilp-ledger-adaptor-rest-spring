@@ -1,4 +1,4 @@
-rootProject.name = 'java-ilp-ledger-adaptor-rest'
+rootProject.name = 'java-ilp-ledger-adaptor-rest-spring'
 
 include ':java-crypto-conditions'
 project(':java-crypto-conditions').projectDir = new File(settingsDir, '../java-crypto-conditions')
