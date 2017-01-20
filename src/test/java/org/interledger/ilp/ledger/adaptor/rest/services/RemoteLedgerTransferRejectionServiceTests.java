@@ -8,8 +8,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import java.net.URI;
 import java.util.UUID;
 
+import org.interledger.ilp.client.model.ClientLedgerTransfer;
 import org.interledger.ilp.ledger.adaptor.rest.MockRestClient;
-import org.interledger.ilp.ledger.client.model.ClientLedgerTransfer;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpMethod;

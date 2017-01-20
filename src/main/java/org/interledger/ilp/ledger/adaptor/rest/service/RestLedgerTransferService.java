@@ -6,9 +6,7 @@ import java.util.UUID;
 import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.ledger.model.LedgerTransfer;
 import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
-import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
-import org.interledger.ilp.ledger.adaptor.rest.service.RestLedgerMetaService.UriBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -22,17 +20,8 @@ import org.springframework.web.client.RestTemplate;
 
 public class RestLedgerTransferService extends RestServiceBase {
   
-  private UriBuilder transferIdUriBuilder;
-  private UriBuilder transferFulfillmentUriBuilder;
-  private UriBuilder rejectTransferUriBuilder;
-
-  public RestLedgerTransferService(RestLedgerAdaptor adaptor, RestTemplate restTemplate, 
-      UriBuilder transferIdUriBuilder, UriBuilder transferFulfillmentUriBuilder, UriBuilder rejectTransferUriBuilder) {
-    super(adaptor, restTemplate);
-    
-    this.transferIdUriBuilder = transferIdUriBuilder;
-    this.transferFulfillmentUriBuilder = transferFulfillmentUriBuilder;
-    this.rejectTransferUriBuilder = rejectTransferUriBuilder;
+  public RestLedgerTransferService(RestLedgerJsonConverter converter, RestTemplate restTemplate) {
+    super(converter, restTemplate);
   }
 
   private static final Logger log = LoggerFactory.getLogger(RestLedgerTransferService.class);
@@ -40,16 +29,15 @@ public class RestLedgerTransferService extends RestServiceBase {
   public void sendTransfer(LedgerTransfer transfer) {
     try {
 
-      JsonLedgerTransfer jsonTransfer = JsonLedgerTransfer.fromLedgerTransfer(transfer, adaptor);
+      JsonLedgerTransfer jsonTransfer = getConverter().convertLedgerTransfer(transfer);
 
       log.debug("PUT Transfer - id : {}", jsonTransfer.getId());
-
 
       RequestEntity<JsonLedgerTransfer> request =
           RequestEntity.put(jsonTransfer.getId()).contentType(MediaType.APPLICATION_JSON_UTF8)
               .body(jsonTransfer, JsonLedgerTransfer.class);
       ResponseEntity<JsonLedgerTransfer> rsp =
-          restTemplate.exchange(request, JsonLedgerTransfer.class);
+          getRestTemplate().exchange(request, JsonLedgerTransfer.class);
 
       log.trace("Transfer Response: " + rsp.getBody());
 
@@ -74,9 +62,9 @@ public class RestLedgerTransferService extends RestServiceBase {
 
       HttpEntity<Object> rejectionRequest = new HttpEntity<>(reason.toString(), headers);
       
-      URI rejectTransferUri = rejectTransferUriBuilder.getUri(transfer.getId().toString());
+      URI rejectTransferUri = getConverter().getRejectTransferUri(transfer.getId());
       
-      restTemplate.exchange(
+      getRestTemplate().exchange(
           rejectTransferUri,
           HttpMethod.PUT, rejectionRequest, String.class);
 
@@ -97,7 +85,7 @@ public class RestLedgerTransferService extends RestServiceBase {
   }
 
   public String getNextTransferId() {
-    return transferIdUriBuilder.getUri(UUID.randomUUID().toString()).toString();
+    return getConverter().convertTransferUuidToUri(UUID.randomUUID()).toString();
   }
 
 }

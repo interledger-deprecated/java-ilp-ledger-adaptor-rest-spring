@@ -2,20 +2,7 @@ package org.interledger.ilp.ledger.adaptor.rest.json;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-
-import javax.money.CurrencyUnit;
-import javax.money.Monetary;
-import javax.money.MonetaryException;
-import javax.money.UnknownCurrencyException;
-import javax.money.format.MonetaryAmountFormat;
-import javax.money.format.MonetaryFormats;
-
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilp.core.ledger.model.LedgerInfo;
-import org.interledger.ilp.ledger.client.exceptions.DataModelTranslationException;
-import org.interledger.ilp.ledger.client.model.ClientLedgerInfo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -123,35 +110,6 @@ public class JsonLedgerInfo {
 
   public void setUrls(Map<String, String> urls) {
     this.urls = urls;
-  }
-
-  public LedgerInfo toLedgerInfo() {
-    
-    ClientLedgerInfo ledgerInfo = new ClientLedgerInfo();
-    ledgerInfo.setId(getId().toString());
-    ledgerInfo.setPrefix(new InterledgerAddress(getIlpPrefix()));    
-    ledgerInfo.setPrecision(getPrecision());
-    ledgerInfo.setScale(getScale());
-    
-    try {
-      CurrencyUnit currency = Monetary.getCurrency(getCurrencyCode());
-      ledgerInfo.setCurrencyUnit(currency);
-    } catch (UnknownCurrencyException e) {
-      throw new DataModelTranslationException("Unrecognized currency code: " + getCurrencyCode(), this, e);
-    }
-    
-    try {
-      //TODO Set the style using the provided symbol 
-      MonetaryAmountFormat format = MonetaryFormats.getAmountFormat(Locale.getDefault());
-      ledgerInfo.setMonetaryAmountFormat(format);
-    } catch (MonetaryException e) {
-      throw new DataModelTranslationException("Unable to load currency formatter.", this, e);
-    }
-    
-    //TODO Decode public key
-    ledgerInfo.setConditionSignPublicKey(null);
-    
-    return ledgerInfo;
   }
 
   @Override
