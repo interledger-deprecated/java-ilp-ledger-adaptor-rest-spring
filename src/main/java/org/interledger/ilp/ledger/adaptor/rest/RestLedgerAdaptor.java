@@ -6,7 +6,9 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
+import org.interledger.cryptoconditions.Fulfillment;
 import org.interledger.ilp.core.InterledgerAddress;
 import org.interledger.ilp.core.ledger.LedgerAdaptor;
 import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
@@ -126,6 +128,11 @@ public class RestLedgerAdaptor implements LedgerAdaptor {
     return getAccountService().getAccountInfo(accountId);
   }
 
+  public void fulfillTransfer(UUID transferId, Fulfillment fulfillment) {
+    URI transferIdUri = converter.convertTransferUuidToUri(transferId);
+    getTransferService().fulfillTransfer(transferIdUri, fulfillment);
+  }
+  
   @Override
   public LedgerInfo getLedgerInfo() {
 
