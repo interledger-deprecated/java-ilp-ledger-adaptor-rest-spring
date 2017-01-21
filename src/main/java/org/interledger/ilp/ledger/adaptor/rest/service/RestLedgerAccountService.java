@@ -6,10 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.interledger.ilp.core.ledger.model.AccountInfo;
-import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.AdaptorStateException;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
-import org.interledger.ilp.ledger.adaptor.rest.json.JsonAccount;
+import org.interledger.ilp.ledger.adaptor.rest.json.JsonAccountInfo;
 import org.interledger.ilp.ledger.adaptor.ws.JsonRpcLedgerWebSocketChannel;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcResponseMessage;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcSubscribeAccountRequest;
@@ -24,8 +23,8 @@ public class RestLedgerAccountService extends RestServiceBase {
   private JsonRpcLedgerWebSocketChannel websocketChannel;
 
   public RestLedgerAccountService(
-      RestLedgerAdaptor adaptor, RestTemplate restTemplate, JsonRpcLedgerWebSocketChannel websocketChannel) {
-    super(adaptor, restTemplate);
+      RestLedgerJsonConverter converter, RestTemplate restTemplate, JsonRpcLedgerWebSocketChannel websocketChannel) {
+    super(converter, restTemplate);
     this.websocketChannel = websocketChannel;
   }
 
@@ -36,8 +35,8 @@ public class RestLedgerAccountService extends RestServiceBase {
 
       log.debug("GET Account: name = " + accountId);
       
-      JsonAccount jsonAccount = restTemplate.getForObject(accountId, JsonAccount.class);
-      return jsonAccount.toAccount(adaptor);
+      JsonAccountInfo jsonAccount = getRestTemplate().getForObject(accountId, JsonAccountInfo.class);
+      return getConverter().convertJsonAccountInfo(jsonAccount);
       
     } catch (HttpStatusCodeException e) {
       switch (e.getStatusCode()) {

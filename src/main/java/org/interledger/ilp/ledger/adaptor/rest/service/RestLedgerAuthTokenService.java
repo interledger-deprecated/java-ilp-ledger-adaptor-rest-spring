@@ -2,7 +2,6 @@ package org.interledger.ilp.ledger.adaptor.rest.service;
 
 import java.net.URI;
 
-import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonAuthToken;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -12,8 +11,8 @@ public class RestLedgerAuthTokenService extends RestServiceBase {
 
   private URI uri;
 
-  public RestLedgerAuthTokenService(RestLedgerAdaptor adaptor, RestTemplate restTemplate, URI uri) {
-    super(adaptor, restTemplate);
+  public RestLedgerAuthTokenService(RestTemplate restTemplate, URI uri) {
+    super(restTemplate);
     this.uri = uri;
   }
 
@@ -23,7 +22,7 @@ public class RestLedgerAuthTokenService extends RestServiceBase {
 
       log.debug("GET Auth Token");
       JsonAuthToken token =
-          restTemplate.getForObject(uri, JsonAuthToken.class);
+          getRestTemplate().getForObject(uri, JsonAuthToken.class);
       return token.getToken();
 
     } catch (HttpStatusCodeException e) {

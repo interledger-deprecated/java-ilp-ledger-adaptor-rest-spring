@@ -8,8 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-import org.interledger.ilp.ledger.client.json.JsonErrorResponseEnvelope;
-import org.interledger.ilp.ledger.client.json.JsonMessageEnvelope;
+import org.interledger.ilqp.json.JsonErrorResponseEnvelope;
+import org.interledger.ilqp.json.JsonMessageEnvelope;
 import org.junit.Test;
 import org.springframework.util.Assert;
 

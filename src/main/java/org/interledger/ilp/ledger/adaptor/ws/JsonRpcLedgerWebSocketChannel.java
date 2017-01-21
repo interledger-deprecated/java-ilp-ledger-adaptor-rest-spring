@@ -2,11 +2,14 @@ package org.interledger.ilp.ledger.adaptor.ws;
 
 import java.net.URI;
 
+import org.interledger.ilp.client.events.ClientLedgerConnectEvent;
+import org.interledger.ilp.client.events.ClientLedgerErrorEvent;
+import org.interledger.ilp.client.events.ClientLedgerMessageEvent;
+import org.interledger.ilp.client.events.ClientLedgerTransferEvent;
 import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
-import org.interledger.ilp.core.ledger.events.LedgerEventSource;
-import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerMessage;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
+import org.interledger.ilp.ledger.adaptor.rest.service.RestLedgerJsonConverter;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcConnectNotification;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcMessage;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcNotification;
@@ -14,26 +17,19 @@ import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcNotificationParams;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcRequestMessageNotificationParams;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcRequestTransferNotificationParams;
 import org.interledger.ilp.ledger.adaptor.ws.jsonrpc.JsonRpcResponseMessage;
-import org.interledger.ilp.ledger.client.events.ClientLedgerConnectEvent;
-import org.interledger.ilp.ledger.client.events.ClientLedgerErrorEvent;
-import org.interledger.ilp.ledger.client.events.ClientLedgerMessageEvent;
-import org.interledger.ilp.ledger.client.events.ClientLedgerTransferEvent;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
-public class JsonRpcLedgerWebSocketChannel extends JsonRpcWebSocketChannel
-    implements LedgerEventSource {
+public class JsonRpcLedgerWebSocketChannel extends JsonRpcWebSocketChannel {
 
-  private URI ledgerId;
-  private RestLedgerAdaptor adaptor;
   private LedgerEventHandler eventHandler;
+  private RestLedgerJsonConverter converter;
   private boolean isConnected = false; // Not thread safe?
 
-  public JsonRpcLedgerWebSocketChannel(RestLedgerAdaptor adaptor, URI ledgerId, URI uri, String authToken, LedgerEventHandler eventHandler) {
+  public JsonRpcLedgerWebSocketChannel(URI uri, String authToken, LedgerEventHandler eventHandler, RestLedgerJsonConverter converter) {
     super(URI.create(uri.toString() + "?token=" + authToken), true, 5);
-    this.adaptor = adaptor;
-    this.ledgerId = ledgerId;
     this.eventHandler = eventHandler;
+    this.converter = converter;
   }
 
   @Override
@@ -87,21 +83,16 @@ public class JsonRpcLedgerWebSocketChannel extends JsonRpcWebSocketChannel
     super.onConnectionClosed(status);
   }
 
-  @Override
-  public URI getLedgerId() {
-    return this.ledgerId;
-  }
-
   private void onLedgerTransferNotification(
       JsonRpcRequestTransferNotificationParams transferParams) {
     JsonLedgerTransfer transfer = transferParams.getTransfer();
     eventHandler
-        .handleLedgerEvent(new ClientLedgerTransferEvent(this, transfer.toLedgerTransfer(adaptor)));
+        .handleLedgerEvent(new ClientLedgerTransferEvent(this, converter.convertJsonLedgerTransfer(transfer)));
   }
 
   private void onLedgerMessage(JsonRpcRequestMessageNotificationParams messageParams) {
     JsonLedgerMessage msg = ((JsonRpcRequestMessageNotificationParams) messageParams).getMessage();
-    eventHandler.handleLedgerEvent(new ClientLedgerMessageEvent(this, msg.toLedgerMessage(adaptor)));
+    eventHandler.handleLedgerEvent(new ClientLedgerMessageEvent(this, converter.convertJsonLedgerMessage(msg)));
   }
 
   private void onUnknownMessage(JsonRpcMessage message) {

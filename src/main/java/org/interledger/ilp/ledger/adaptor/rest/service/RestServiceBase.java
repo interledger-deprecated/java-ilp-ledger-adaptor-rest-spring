@@ -1,6 +1,5 @@
 package org.interledger.ilp.ledger.adaptor.rest.service;
 
-import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonError;
 import org.slf4j.Logger;
@@ -12,12 +11,20 @@ public class RestServiceBase {
 
   protected static final Logger log = LoggerFactory.getLogger(RestServiceBase.class);
 
-  protected RestTemplate restTemplate;
-  protected RestLedgerAdaptor adaptor;
-
-  public RestServiceBase(RestLedgerAdaptor adaptor, RestTemplate restTemplate) {
+  private RestTemplate restTemplate;
+  private RestLedgerJsonConverter converter;
+  
+  public RestServiceBase(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
-    this.adaptor = adaptor;
+  }
+  
+  public RestServiceBase(RestLedgerJsonConverter converter, RestTemplate restTemplate) {
+    this.restTemplate = restTemplate;
+    this.converter = converter;
+  }
+  
+  public RestLedgerJsonConverter getConverter() {
+    return this.converter;
   }
 
   public RestTemplate getRestTemplate() {

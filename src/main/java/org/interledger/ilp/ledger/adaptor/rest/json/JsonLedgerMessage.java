@@ -1,13 +1,6 @@
 package org.interledger.ilp.ledger.adaptor.rest.json;
 
 import java.net.URI;
-import java.nio.charset.Charset;
-import java.util.Base64;
-import java.util.Map;
-
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
-import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
-import org.interledger.ilp.ledger.client.model.ClientLedgerMessage;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -67,50 +60,15 @@ public class JsonLedgerMessage {
 
   }
 
-  public LedgerMessage toLedgerMessage(RestLedgerAdaptor ledgerAdaptor) {
-    
-    ClientLedgerMessage clientMessage = new ClientLedgerMessage();
-        
-    clientMessage.setFrom(ledgerAdaptor.getAccountAddress(getFrom()));
-    clientMessage.setTo(ledgerAdaptor.getAccountAddress(getTo()));
-    
-    //FIXME Would be great if message had some type info for data so we didn't have to "detect" the type
-    // See https://github.com/interledger/rfcs/issues/127#issuecomment-270411273
-    Object data = getData();
-    if (data instanceof Map) {
-      //Looks like this is JSON data
-      try {
-        ObjectMapper mapper = new ObjectMapper();
-        String dataValue = mapper.writeValueAsString(data);
-        clientMessage.setData(dataValue.getBytes(Charset.forName("UTF-8")));
-      } catch (JsonProcessingException e) {
-        throw new RuntimeException("Unable to reserialize message data.", e);
-      }
-    } else {
-      clientMessage.setData(Base64.getDecoder().decode(data.toString()));
+  @Override
+  public String toString() {
+    ObjectMapper mapper = new ObjectMapper();
+    try {
+      return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
     }
-    return clientMessage;
   }
 
-  public static JsonLedgerMessage fromLedgerMessage(LedgerMessage message,
-      RestLedgerAdaptor ledgerAdaptor) {
-
-    JsonLedgerMessage jsonMessage = new JsonLedgerMessage();
-    jsonMessage.setLedger(URI.create(ledgerAdaptor.getLedgerInfo().getId()));
-    jsonMessage.setFrom(ledgerAdaptor.getAccountIdentifier(message.getFrom()));
-    jsonMessage.setTo(ledgerAdaptor.getAccountIdentifier(message.getTo()));
-
-    // TODO Undocumented assumptions made here.
-    // If the provided data is valid UTF8 JSON then embed otherwise base64url encode and send as {
-    // "base64url" : "<data>"}.
-    String data = new String(message.getData(), Charset.forName("UTF-8"));
-    if (JsonValidator.isValid(data)) {
-      jsonMessage.setData(data);
-    } else {
-      jsonMessage.setData(
-          "{\"base64url\":\"" + Base64.getUrlEncoder().encodeToString(message.getData()) + "\"}");
-    }
-    return jsonMessage;
-  }
 
 }
