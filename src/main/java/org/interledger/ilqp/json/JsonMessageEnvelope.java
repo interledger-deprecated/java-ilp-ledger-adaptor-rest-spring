@@ -1,7 +1,7 @@
 package org.interledger.ilqp.json;
 
-import org.interledger.ilp.core.ledger.model.MessageData;
-import org.interledger.ilp.core.ledger.model.MessageEnvelope;
+import org.interledger.ilp.ledger.model.MessageData;
+import org.interledger.ilp.ledger.model.MessageEnvelope;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;

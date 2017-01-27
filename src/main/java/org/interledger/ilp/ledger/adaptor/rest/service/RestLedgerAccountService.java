@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.interledger.ilp.core.ledger.model.AccountInfo;
+import org.interledger.ilp.ledger.model.AccountInfo;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.AdaptorStateException;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonAccountInfo;

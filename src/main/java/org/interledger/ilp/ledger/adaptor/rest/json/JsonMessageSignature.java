@@ -3,7 +3,7 @@ package org.interledger.ilp.ledger.adaptor.rest.json;
 import java.security.PublicKey;
 import java.security.spec.AlgorithmParameterSpec;
 
-import org.interledger.ilp.core.ledger.model.MessageSignature;
+import org.interledger.ilp.ledger.model.MessageSignature;
 
 public class JsonMessageSignature implements MessageSignature {
 

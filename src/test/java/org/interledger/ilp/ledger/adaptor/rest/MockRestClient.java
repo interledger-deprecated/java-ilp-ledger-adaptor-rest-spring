@@ -2,7 +2,7 @@ package org.interledger.ilp.ledger.adaptor.rest;
 
 import java.net.URI;
 
-import org.interledger.ilp.core.ledger.model.LedgerInfo;
+import org.interledger.ilp.ledger.model.LedgerInfo;
 import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
 import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
 import org.springframework.boot.web.client.RestTemplateBuilder;

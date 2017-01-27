@@ -6,15 +6,17 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilp.core.ledger.LedgerAdaptor;
-import org.interledger.ilp.core.ledger.events.LedgerEventHandler;
-import org.interledger.ilp.core.ledger.model.AccountInfo;
-import org.interledger.ilp.core.ledger.model.LedgerInfo;
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
-import org.interledger.ilp.core.ledger.model.LedgerTransfer;
-import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
+import org.interledger.cryptoconditions.Fulfillment;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.ledger.LedgerAdaptor;
+import org.interledger.ilp.ledger.events.LedgerEventHandler;
+import org.interledger.ilp.ledger.model.AccountInfo;
+import org.interledger.ilp.ledger.model.LedgerInfo;
+import org.interledger.ilp.ledger.model.LedgerMessage;
+import org.interledger.ilp.ledger.model.LedgerTransfer;
+import org.interledger.ilp.ledger.model.TransferRejectedReason;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
 import org.interledger.ilp.ledger.adaptor.rest.service.RestLedgerAccountService;
 import org.interledger.ilp.ledger.adaptor.rest.service.RestLedgerAuthTokenService;
@@ -126,6 +128,11 @@ public class RestLedgerAdaptor implements LedgerAdaptor {
     return getAccountService().getAccountInfo(accountId);
   }
 
+  public void fulfillTransfer(UUID transferId, Fulfillment fulfillment) {
+    URI transferIdUri = converter.convertTransferUuidToUri(transferId);
+    getTransferService().fulfillTransfer(transferIdUri, fulfillment);
+  }
+  
   @Override
   public LedgerInfo getLedgerInfo() {
 

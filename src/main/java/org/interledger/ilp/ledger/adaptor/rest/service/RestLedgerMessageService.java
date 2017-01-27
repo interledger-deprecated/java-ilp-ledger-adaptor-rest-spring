@@ -2,7 +2,7 @@ package org.interledger.ilp.ledger.adaptor.rest.service;
 
 import java.net.URI;
 
-import org.interledger.ilp.core.ledger.model.LedgerMessage;
+import org.interledger.ilp.ledger.model.LedgerMessage;
 import org.interledger.ilp.ledger.adaptor.rest.exceptions.RestServiceException;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerMessage;
 import org.springframework.http.MediaType;

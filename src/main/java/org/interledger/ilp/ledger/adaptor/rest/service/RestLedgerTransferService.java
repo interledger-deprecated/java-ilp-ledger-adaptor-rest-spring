@@ -1,11 +1,12 @@
 package org.interledger.ilp.ledger.adaptor.rest.service;
 
 import java.net.URI;
+import java.util.Base64;
 import java.util.UUID;
 
 import org.interledger.cryptoconditions.Fulfillment;
-import org.interledger.ilp.core.ledger.model.LedgerTransfer;
-import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
+import org.interledger.ilp.ledger.model.LedgerTransfer;
+import org.interledger.ilp.ledger.model.TransferRejectedReason;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,9 +80,30 @@ public class RestLedgerTransferService extends RestServiceBase {
     }
   }
   
-  public void fulfillTransfer(String transferId, Fulfillment fulfillment) {
-    //TODO Implement fulfill transfer
+  public void fulfillTransfer(URI transferIdUri, Fulfillment fulfillment) {
 
+    log.debug("Submitting Fulfillment for Transfer - id : {}", transferIdUri);
+
+    try {
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(MediaType.TEXT_PLAIN);
+
+      String fulfillmentBase64url = Base64.getUrlEncoder().encodeToString(fulfillment.getEncoded());
+      HttpEntity<Object> fulfillmentRequest = new HttpEntity<>(fulfillmentBase64url, headers);
+      
+      getRestTemplate().exchange(
+          transferIdUri,
+          HttpMethod.PUT, fulfillmentRequest, String.class);
+
+    } catch (HttpStatusCodeException e) {
+      switch (e.getStatusCode()) {
+        case BAD_REQUEST:
+        case UNPROCESSABLE_ENTITY:
+          throw parseRestException(e);
+        default:
+          throw e;
+      }
+    }
   }
 
   public String getNextTransferId() {
