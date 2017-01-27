@@ -2,8 +2,8 @@ package org.interledger.ilqp.json;
 
 import java.util.Set;
 
-import org.interledger.ilp.core.InterledgerAddress;
-import org.interledger.ilp.core.ledger.model.MessageData;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.ledger.model.MessageData;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;

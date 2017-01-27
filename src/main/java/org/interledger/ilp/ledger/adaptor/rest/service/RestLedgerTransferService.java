@@ -5,8 +5,8 @@ import java.util.Base64;
 import java.util.UUID;
 
 import org.interledger.cryptoconditions.Fulfillment;
-import org.interledger.ilp.core.ledger.model.LedgerTransfer;
-import org.interledger.ilp.core.ledger.model.TransferRejectedReason;
+import org.interledger.ilp.ledger.model.LedgerTransfer;
+import org.interledger.ilp.ledger.model.TransferRejectedReason;
 import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerTransfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

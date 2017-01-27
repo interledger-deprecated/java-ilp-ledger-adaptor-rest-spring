@@ -6,7 +6,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import java.net.URI;
 
-import org.interledger.ilp.core.ledger.model.LedgerInfo;
+import org.interledger.ilp.ledger.model.LedgerInfo;
 import org.interledger.ilp.ledger.adaptor.rest.MockRestClient;
 import org.interledger.ilp.ledger.adaptor.rest.service.RestLedgerMetaService;
 import org.junit.Before;

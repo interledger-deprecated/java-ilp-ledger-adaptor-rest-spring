@@ -2,7 +2,7 @@ package org.interledger.ilqp.json;
 
 import java.math.BigDecimal;
 
-import org.interledger.ilp.core.ledger.model.MessageData;
+import org.interledger.ilp.ledger.model.MessageData;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
