@@ -1,0 +1,8 @@
+{
+    "balance": "100",
+    "id": "https://ledger.example.com/ledger/accounts/bob",
+    "is_disabled": false,
+    "minimum_allowed_balance": "0",
+	"name": "bob",
+    "ledger": "https://ledger.example.com/ledger"
+}
