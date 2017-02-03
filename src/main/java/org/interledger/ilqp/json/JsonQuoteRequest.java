@@ -1,15 +1,17 @@
 package org.interledger.ilqp.json;
 
-import java.util.Set;
-
-import org.interledger.ilp.InterledgerAddress;
-import org.interledger.ilp.ledger.model.MessageData;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.interledger.ilp.InterledgerAddress;
+import org.interledger.ilp.ledger.model.MessageData;
 
-@JsonInclude(value=Include.NON_NULL)
+import java.util.Set;
+
+/**
+ * The JSON representation of a ILQP Quote Request. 
+ */
+@JsonInclude(value = Include.NON_NULL)
 public class JsonQuoteRequest implements MessageData {
   
   private String sourceAddress;
@@ -67,30 +69,39 @@ public class JsonQuoteRequest implements MessageData {
   public Set<InterledgerAddress> getConnectors() {
     return connectors;
   }
+
   public void setSourceAddress(String sourceAddress) {
     this.sourceAddress = sourceAddress;
   }
+
   public void setSourceAmount(String sourceAmount) {
     this.sourceAmount = sourceAmount;
   }
+
   public void setSourceExpiryDuration(long sourceExpiryDuration) {
     this.sourceExpiryDuration = sourceExpiryDuration;
   }
+
   public void setDestinationAmount(String destinationAmount) {
     this.destinationAmount = destinationAmount;
   }
+
   public void setDestinationAddress(String destinationAddress) {
     this.destinationAddress = destinationAddress;
   }
+
   public void setDestinationExpiryDuration(long destinationExpiryDuration) {
     this.destinationExpiryDuration = destinationExpiryDuration;
   }
+
   public void setDestinationPrecision(String destinationPrecision) {
     this.destinationPrecision = destinationPrecision;
   }
+
   public void setDestinationScale(String destinationScale) {
     this.destinationScale = destinationScale;
   }
+
   public void setConnectors(Set<InterledgerAddress> connectors) {
     this.connectors = connectors;
   }

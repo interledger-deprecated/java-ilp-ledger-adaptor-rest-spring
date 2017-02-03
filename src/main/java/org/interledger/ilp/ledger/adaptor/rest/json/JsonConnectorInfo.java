@@ -1,9 +1,13 @@
 package org.interledger.ilp.ledger.adaptor.rest.json;
 
-import java.net.URI;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.net.URI;
+
+
+/**
+ * JSON model of connector information as would be exchanged with the REST ledger.
+ */
 public class JsonConnectorInfo {
 
   private URI id;

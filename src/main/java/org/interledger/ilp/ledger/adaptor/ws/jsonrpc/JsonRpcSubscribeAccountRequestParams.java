@@ -1,10 +1,13 @@
 package org.interledger.ilp.ledger.adaptor.ws.jsonrpc;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.net.URI;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+/**
+ * Defines the parameters used in a JSON-RPC call to subscribe to account notifications.
+ */
 public class JsonRpcSubscribeAccountRequestParams implements JsonRpcRequestParams {
 
   private List<URI> accounts;

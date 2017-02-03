@@ -1,7 +1,5 @@
 package org.interledger.ilp.ledger.adaptor.rest.json;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -9,13 +7,23 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
+
 public class JsonValidator {
+  
+  /**
+   * Sanity check that the json encoded string provided is valid JSON. 
+   *
+   * @param json
+   *  The json encoded string to validate
+   * @return
+   *  True if the string contains valid JSON encoded data, false otherwise. 
+   */
   public static boolean isValid(String json) {
     boolean retValue = true;
     try {
       JsonParser parser = factory.createParser(json);
       JsonNode jsonObj = mapper.readTree(parser);
-      System.out.println(jsonObj.toString());
     } catch (JsonParseException jpe) {
       retValue = false;
     } catch (IOException ioe) {

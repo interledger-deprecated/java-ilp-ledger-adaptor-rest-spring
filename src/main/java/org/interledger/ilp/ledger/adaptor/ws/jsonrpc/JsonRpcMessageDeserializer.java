@@ -1,7 +1,5 @@
 package org.interledger.ilp.ledger.adaptor.ws.jsonrpc;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -10,6 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.io.IOException;
+
+/**
+ * A custom deserializer for JSON-RPC messages.
+ */
 public class JsonRpcMessageDeserializer extends StdDeserializer<JsonRpcMessage> {
 
   private static final long serialVersionUID = -3213662859742573217L;
@@ -45,8 +48,9 @@ public class JsonRpcMessageDeserializer extends StdDeserializer<JsonRpcMessage> 
       }
     }
 
-    if (rpcClass == null)
+    if (rpcClass == null) {
       return null;
+    }
     return mapper.readValue(root.traverse(), rpcClass);
   }
 

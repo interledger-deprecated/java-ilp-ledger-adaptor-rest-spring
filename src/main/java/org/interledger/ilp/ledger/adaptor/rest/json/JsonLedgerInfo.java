@@ -1,14 +1,17 @@
 package org.interledger.ilp.ledger.adaptor.rest.json;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * JSON model of ledger information as would be exchanged with the REST ledger.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonLedgerInfo {
 
@@ -117,8 +120,8 @@ public class JsonLedgerInfo {
     ObjectMapper mapper = new ObjectMapper();
     try {
       return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+    } catch (JsonProcessingException jpe) {
+      throw new RuntimeException(jpe);
     }
   }
 

@@ -4,7 +4,7 @@ import java.net.URI;
 
 import org.interledger.ilp.ledger.model.LedgerInfo;
 import org.interledger.ilp.ledger.adaptor.rest.RestLedgerAdaptor;
-import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
+import org.interledger.ilp.ledger.adaptor.rest.ServiceUrl;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 
 public class MockRestClient extends RestLedgerAdaptor {
@@ -22,7 +22,7 @@ public class MockRestClient extends RestLedgerAdaptor {
     return null;
   }
 
-  public String getServiceUrl(ServiceUrls name) {
+  public String getServiceUrl(ServiceUrl name) {
 
     switch (name) {
       case ACCOUNT:

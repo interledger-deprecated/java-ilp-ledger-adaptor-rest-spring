@@ -2,6 +2,9 @@ package org.interledger.ilp.ledger.adaptor.ws.jsonrpc;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Represents a request message (a method invocation) over JSON-RPC.
+ */
 public class JsonRpcRequestMessage extends JsonRpcMessage {
 
   private String method;

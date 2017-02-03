@@ -1,9 +1,11 @@
 package org.interledger.ilqp.json;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.interledger.ilp.ledger.model.MessageData;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
+/**
+ * Defines an envelope to hold a JSON Quote Response.
+ */
 public class JsonQuoteResponseEnvelope extends JsonMessageEnvelope {
 
   private JsonQuoteResponse quote;
@@ -14,14 +16,14 @@ public class JsonQuoteResponseEnvelope extends JsonMessageEnvelope {
   }
 
   @Override
-  @JsonDeserialize(as=JsonQuoteResponse.class)
+  @JsonDeserialize(as = JsonQuoteResponse.class)
   public void setData(MessageData data) {
-    if(!(data instanceof JsonQuoteResponse)) {
+    
+    if (!(data instanceof JsonQuoteResponse)) {
       throw new IllegalArgumentException("Only Quote Request objects accepted as data.");
     }
-    
+
     quote = (JsonQuoteResponse) data;
-    
   }
 
 }
