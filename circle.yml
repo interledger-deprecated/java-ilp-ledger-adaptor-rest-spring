@@ -2,8 +2,8 @@ machine:
   java:
     version: oraclejdk8
 
-dependencies:
-  pre:
+checkout:
+  post:
     # we rely on the source of several other ILP projects for now. 
     # TODO: once we reach a release milestone, swap this for dependecies on published jars
     - git clone https://github.com/interledger/java-crypto-conditions
