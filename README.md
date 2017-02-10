@@ -1,4 +1,4 @@
-# Interledger REST Ledger Adaptor (Java)
+# Interledger REST Ledger Adaptor (Java) [![CircleCI](https://circleci.com/gh/interledger/java-ilp-ledger-adaptor-rest-spring.svg?style=svg)](https://circleci.com/gh/interledger/java-ilp-ledger-adaptor-rest-spring)
 
 Interledger ledger adaptor for ledgers using a REST API.
 

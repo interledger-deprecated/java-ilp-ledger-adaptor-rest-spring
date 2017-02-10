@@ -11,6 +11,8 @@ dependencies:
     - cd .. && git clone https://github.com/interledger/java-ilp-client
 
 test:
+  override:
+    - gradle test check
   post:
     # see https://circleci.com/docs/test-metadata/#gradle-junit-results
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
