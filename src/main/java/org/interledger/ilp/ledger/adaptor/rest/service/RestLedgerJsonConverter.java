@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.interledger.cryptoconditions.uri.CryptoConditionUri;
-import org.interledger.cryptoconditions.uri.URIEncodingException;
+import org.interledger.cryptoconditions.uri.UriEncodingException;
 import org.interledger.ilp.InterledgerAddress;
 import org.interledger.ilp.client.exceptions.DataModelTranslationException;
 import org.interledger.ilp.client.model.ClientAccountInfo;
@@ -274,7 +274,7 @@ public class RestLedgerJsonConverter {
       try {
         transfer.setCancellationCondition(
             CryptoConditionUri.parse(jsonTransfer.getCancellationCondition()));
-      } catch (URIEncodingException uee) {
+      } catch (UriEncodingException uee) {
         throw new RuntimeException("Error parsing cancellation condition.", uee);
       }
     }
@@ -283,7 +283,7 @@ public class RestLedgerJsonConverter {
       try {
         transfer.setExecutionCondition(
             CryptoConditionUri.parse(jsonTransfer.getExecutionCondition()));
-      } catch (URIEncodingException uee) {
+      } catch (UriEncodingException uee) {
         throw new RuntimeException("Error parsing execution condition.", uee);
       }
     }
