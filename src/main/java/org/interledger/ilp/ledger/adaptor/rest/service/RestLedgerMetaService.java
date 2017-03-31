@@ -1,27 +1,30 @@
 package org.interledger.ilp.ledger.adaptor.rest.service;
 
+import org.interledger.ilp.ledger.adaptor.rest.ServiceUrl;
+import org.interledger.ilp.ledger.adaptor.rest.json.JsonConnectorInfo;
+import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerInfo;
+import org.interledger.ilp.ledger.model.LedgerInfo;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
+
 import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.interledger.ilp.ledger.model.LedgerInfo;
-import org.interledger.ilp.ledger.adaptor.rest.ServiceUrls;
-import org.interledger.ilp.ledger.adaptor.rest.json.JsonConnectorInfo;
-import org.interledger.ilp.ledger.adaptor.rest.json.JsonLedgerInfo;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestTemplate;
-
+/**
+ * This service provides methods to interact with the REST ledger to retrieve meta-information
+ * about the ledger.
+ */
 public class RestLedgerMetaService extends RestServiceBase {
 
-  private Map<ServiceUrls, String> urls;
+  private Map<ServiceUrl, String> urls;
   
+  private URI baseUri;
   private URI authTokenUri;
   private URI websocketUri;
   private URI messageUri;
-  
-  private URI baseUri;
   
   private Set<URI> connectors;
 
@@ -29,28 +32,47 @@ public class RestLedgerMetaService extends RestServiceBase {
   
   private RestLedgerJsonConverter converter;
   
+  /**
+   * Constructs a new <code>RestLedgerMetaService</code> instance.
+   * 
+   * @param restTemplate
+   *  The rest template to use for interacting with the REST ledger.
+   * @param ledgerBaseUrl
+   *  The base URL of the ledger.
+   */
   public RestLedgerMetaService(RestTemplate restTemplate, URI ledgerBaseUrl) {
     super(restTemplate);
     
-    urls = new HashMap<ServiceUrls, String>();
-    urls.put(ServiceUrls.LEDGER, ledgerBaseUrl.toString());
+    urls = new HashMap<ServiceUrl, String>();
+    urls.put(ServiceUrl.LEDGER, ledgerBaseUrl.toString());
 
     baseUri = ledgerBaseUrl;
-    
   }
   
+  /** Retrieves information about the ledger. */
   public LedgerInfo getLedgerInfo() {
+    
     return getLedgerInfo(false);
   }  
   
+  /**
+   * Retrieves information about the ledger.
+   *
+   * @param skipCache
+   *  Set to true to indicate that cached results should be ignored and new information should be
+   *      retrieved from the ledger.
+   * @return
+   *  Information about the ledger.
+   */
   public LedgerInfo getLedgerInfo(boolean skipCache) {
 
-    if(cache == null || skipCache) {
+    if (cache == null || skipCache) {
       try {
 
         log.debug("GET Metadata");
         
-        JsonLedgerInfo jsonLedgerInfo = getRestTemplate().getForObject(baseUri, JsonLedgerInfo.class);
+        JsonLedgerInfo jsonLedgerInfo = getRestTemplate().getForObject(baseUri,
+            JsonLedgerInfo.class);
         
         if (jsonLedgerInfo.getId() == null) {
           jsonLedgerInfo.setId(baseUri);
@@ -64,26 +86,25 @@ public class RestLedgerMetaService extends RestServiceBase {
         // Ideally the ledger would use rfc 6570 compatible templates
         Map<String, String> metaUrls = jsonLedgerInfo.getUrls();
         
-        authTokenUri = URI.create(metaUrls.get(ServiceUrls.AUTH_TOKEN.getName()));
-        messageUri = URI.create(metaUrls.get(ServiceUrls.MESSAGE.getName()));
-        websocketUri = URI.create(metaUrls.get(ServiceUrls.WEBSOCKET.getName()));
+        authTokenUri = URI.create(metaUrls.get(ServiceUrl.AUTH_TOKEN.getName()));
+        messageUri = URI.create(metaUrls.get(ServiceUrl.MESSAGE.getName()));
+        websocketUri = URI.create(metaUrls.get(ServiceUrl.WEBSOCKET.getName()));
         
         connectors = new HashSet<>();
         for (JsonConnectorInfo connector : jsonLedgerInfo.getConnectors()) {
           connectors.add(connector.getId());
         }
 
-      } catch (HttpStatusCodeException e) {
-        switch (e.getStatusCode()) {
+      } catch (HttpStatusCodeException sce) {
+        switch (sce.getStatusCode()) {
           // No known RestExceptions for the metadata service
           default:
-            throw e;
+            throw sce;
         }
       }      
     }
     
     return cache;
-
   }
   
   public URI getBaseUri() {

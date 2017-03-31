@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * JSON model of an error message that could be sent by the REST ledger.
+ */
 public class JsonError {
 
   private String id;
@@ -38,8 +41,8 @@ public class JsonError {
     ObjectMapper mapper = new ObjectMapper();
     try {
       return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+    } catch (JsonProcessingException jpe) {
+      throw new RuntimeException(jpe);
     }
   }
 }

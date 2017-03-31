@@ -1,12 +1,16 @@
 package org.interledger.ilp.ledger.adaptor.rest.json;
 
-import java.net.URI;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.net.URI;
+
+/**
+ * JSON model of an account entry that is part of the ledger transfer that would be exchanged with
+ * the REST ledger.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(Include.NON_NULL)
 public class JsonLedgerTransferAccountEntry {

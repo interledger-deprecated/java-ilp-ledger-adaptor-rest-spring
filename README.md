@@ -1,4 +1,4 @@
-# Interledger REST Ledger Adaptor (Java)
+# Interledger REST Ledger Adaptor (Java) [![CircleCI](https://circleci.com/gh/interledger/java-ilp-ledger-adaptor-rest-spring.svg?style=svg)](https://circleci.com/gh/interledger/java-ilp-ledger-adaptor-rest-spring)
 
 Interledger ledger adaptor for ledgers using a REST API.
 
@@ -46,12 +46,12 @@ The authentication details of the user can be set directly on the `RestTemplateB
 
 When `connect()` is called the adaptor will fetch the ledger meta-data and then use the data collected to establish a Websocket connection with the ledger.
 
-## TODO
+## TODO list
 
-    * Fix Checkstyle issues
-    * Add tests
-    * Investigate async HTTP requests
-    * Ensure Websocket reconnects and re-establishes subscriptions
+  [x] Fix Checkstyle issues
+  [x] Add tests
+  [ ] Investigate async HTTP requests
+  [ ] Ensure Websocket reconnects and re-establishes subscriptions
     
 ## Contributors
 

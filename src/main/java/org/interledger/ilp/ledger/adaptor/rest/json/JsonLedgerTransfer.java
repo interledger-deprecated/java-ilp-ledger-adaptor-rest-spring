@@ -1,9 +1,5 @@
 package org.interledger.ilp.ledger.adaptor.rest.json;
 
-import java.net.URI;
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -13,6 +9,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.net.URI;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+/**
+ * JSON model of a ledger transfer that would be exchanged with the REST ledger.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(Include.NON_NULL)
 public class JsonLedgerTransfer {

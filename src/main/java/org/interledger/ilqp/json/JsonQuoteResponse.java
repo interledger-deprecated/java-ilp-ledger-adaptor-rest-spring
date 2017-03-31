@@ -1,15 +1,17 @@
 package org.interledger.ilqp.json;
 
-import java.math.BigDecimal;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.interledger.ilp.ledger.model.MessageData;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import java.math.BigDecimal;
 
-@JsonInclude(value=Include.NON_NULL)
-public class JsonQuoteResponse implements MessageData, Comparable<JsonQuoteResponse>{
+/**
+ * The JSON representation of an ILQP Quote Response.
+ */
+@JsonInclude(value = Include.NON_NULL)
+public class JsonQuoteResponse implements MessageData, Comparable<JsonQuoteResponse> {
   
   private String sourceLedger;
   private String destinationLedger;
@@ -87,39 +89,37 @@ public class JsonQuoteResponse implements MessageData, Comparable<JsonQuoteRespo
     
     //Need to check later if this was set
     
-    final int UNKNOWN = -1; //Any non-zero value would work
-    int compareSource = UNKNOWN;
+    final int unknown = -1; //Any non-zero value would work
+    int compareSource = unknown;
     
-    if(getSourceAmount() != null) {
-      if(other.getSourceAmount() != null) {
+    if (getSourceAmount() != null) {
+      if (other.getSourceAmount() != null) {
         BigDecimal sourceAmount = new BigDecimal(getSourceAmount());
         BigDecimal otherSourceAmount = new BigDecimal(other.getSourceAmount());
         compareSource = sourceAmount.compareTo(otherSourceAmount); 
-        if(compareSource != 0) {
+        if (compareSource != 0) {
           return compareSource;
         }
       }
     }
     
-    if(getDestinationAmount() != null) {
-      if(other.getDestinationAmount() != null) {
+    if (getDestinationAmount() != null) {
+      if (other.getDestinationAmount() != null) {
         BigDecimal destinationAmount = new BigDecimal(getDestinationAmount());
         BigDecimal otherDestinationAmount = new BigDecimal(other.getDestinationAmount());
         compareSource = otherDestinationAmount.compareTo(destinationAmount); 
-        if(compareSource != 0) {
+        if (compareSource != 0) {
           return compareSource;
         }
       }
     }
     
-    if(compareSource == UNKNOWN) {
-      throw new IllegalArgumentException("Quotes must either both have a source amount or both have a destination amount.");
+    if (compareSource == unknown) {
+      throw new IllegalArgumentException(
+          "Quotes must either both have a source amount or both have a destination amount.");
     }
     
     return compareSource;
- }
-  
-  
-
+  }
 
 }

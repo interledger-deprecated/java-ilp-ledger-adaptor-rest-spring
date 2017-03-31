@@ -2,6 +2,9 @@ package org.interledger.ilp.ledger.adaptor.ws.jsonrpc;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * An error message as communicated via JSON-RPC.
+ */
 public class JsonRpcError {
 
   private int code;

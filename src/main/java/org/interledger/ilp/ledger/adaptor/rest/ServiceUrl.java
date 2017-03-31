@@ -1,6 +1,9 @@
 package org.interledger.ilp.ledger.adaptor.rest;
 
-public enum ServiceUrls {
+/**
+ * Enumerates the URLs of the services provided by the REST ledger.
+ */
+public enum ServiceUrl {
   LEDGER("ledger"),
   HEALTH("health"),
   TRANSFER("transfer"),
@@ -15,7 +18,7 @@ public enum ServiceUrls {
 
   private String name;
 
-  private ServiceUrls(String name) {
+  private ServiceUrl(String name) {
     this.name = name;
   }
 
@@ -23,8 +26,16 @@ public enum ServiceUrls {
     return name;
   }
 
-  public static ServiceUrls fromName(String name) {
-    for (ServiceUrls url : ServiceUrls.values()) {
+  /**
+   * Returns the ServiceUrl associated with the given name.
+   *
+   * @param name
+   *  The name of the service url.
+   * @return
+   *  The matching ServiceUrl if the name matches. Throws an exception otherwise.
+   */
+  public static ServiceUrl fromName(String name) {
+    for (ServiceUrl url : ServiceUrl.values()) {
       if (url.getName().equals(name)) {
         return url;
       }

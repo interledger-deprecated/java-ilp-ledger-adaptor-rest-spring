@@ -1,7 +1,5 @@
 package org.interledger.ilp.ledger.adaptor.rest.json;
 
-import java.net.URI;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,6 +7,11 @@ import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.net.URI;
+
+/**
+ * JSON model of a ledger message that would be exchanged with the REST ledger.
+ */
 @JsonInclude(Include.NON_NULL)
 public class JsonLedgerMessage {
 
@@ -65,8 +68,8 @@ public class JsonLedgerMessage {
     ObjectMapper mapper = new ObjectMapper();
     try {
       return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+    } catch (JsonProcessingException jpe) {
+      throw new RuntimeException(jpe);
     }
   }
 

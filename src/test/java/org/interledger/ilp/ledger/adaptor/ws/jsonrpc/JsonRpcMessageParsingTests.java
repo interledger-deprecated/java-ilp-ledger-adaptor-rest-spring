@@ -1,5 +1,13 @@
 package org.interledger.ilp.ledger.adaptor.ws.jsonrpc;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.interledger.ilqp.json.JsonErrorResponseEnvelope;
+import org.interledger.ilqp.json.JsonMessageEnvelope;
+import org.junit.Test;
+import org.springframework.util.Assert;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -8,15 +16,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-import org.interledger.ilqp.json.JsonErrorResponseEnvelope;
-import org.interledger.ilqp.json.JsonMessageEnvelope;
-import org.junit.Test;
-import org.springframework.util.Assert;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+/**
+ * Test the parsing of JSON-RPC messages.
+ */
 public class JsonRpcMessageParsingTests {
 
   private String getJson(String filename) throws IOException, URISyntaxException {

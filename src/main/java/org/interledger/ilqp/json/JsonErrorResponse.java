@@ -1,12 +1,14 @@
 package org.interledger.ilqp.json;
 
-import org.interledger.ilp.ledger.model.MessageData;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.interledger.ilp.ledger.model.MessageData;
 
-@JsonInclude(value=Include.NON_NULL)
+/**
+ * Defines a basic JSON error response.
+ */
+@JsonInclude(value = Include.NON_NULL)
 public class JsonErrorResponse implements MessageData {
   
   private String id;

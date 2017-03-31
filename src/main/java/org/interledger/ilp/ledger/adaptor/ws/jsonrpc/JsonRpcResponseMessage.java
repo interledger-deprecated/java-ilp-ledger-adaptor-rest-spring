@@ -3,6 +3,9 @@ package org.interledger.ilp.ledger.adaptor.ws.jsonrpc;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+/**
+ * Defines the basic JSON-RPC response that would be received for a JSON-RPC request.
+ */
 @JsonDeserialize(as = JsonRpcResponseMessage.class)
 public class JsonRpcResponseMessage extends JsonRpcMessage {
 

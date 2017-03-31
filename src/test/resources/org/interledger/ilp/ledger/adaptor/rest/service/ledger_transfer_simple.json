@@ -1,0 +1,14 @@
+{
+  "id": "https://ledger.example.com/ledger/transfers/155dff3f-4915-44df-a707-acc4b527bcbd",
+  "ledger": "https://ledger.example.com/ledger",
+  "debits": [{
+    "account": "https://ledger.example.com/ledger/accounts/alice",
+    "amount": "10",
+    "authorized": true
+  }],
+  "credits": [{
+    "account": "https://ledger.example.com/ledger/accounts/bob",
+    "amount": "10"
+  }],
+  "state": "executed"
+}
